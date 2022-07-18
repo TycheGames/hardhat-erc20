@@ -75,4 +75,6 @@ describe("VersusToken", async function () {
             assert.equal(allowance.toString(), "1000")
         })
     })
+
+    describe("", function () {})
 })
