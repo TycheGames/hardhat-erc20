@@ -76,5 +76,56 @@ describe("VersusToken", async function () {
         })
     })
 
-    describe("", function () {})
+    describe("transferFrom", function () {
+        it("_spendAllowance not enough allowance", async function () {
+            await expect(versusToken.transferFrom(test1, test2, 10000)).to.be.revertedWith(
+                "Insufficent__Allowance"
+            )
+        })
+
+        it("transfer from 'test1' to 'test2' success", async function () {
+            await versusToken.transfer(test1, 1000000)
+            const accounts = await ethers.getSigners()
+            const fromAccount = accounts[1]
+            const fromContract = await versusToken.connect(fromAccount)
+
+            const tx = await fromContract.approve(deployer, 1000000)
+            tx.wait(1)
+            versusToken = await fromContract.connect(accounts[0])
+            await versusToken.transferFrom(test1, test2, 100000)
+            const senderBalance = await versusToken.balanceOf(test1)
+            const receiverBalance = await versusToken.balanceOf(test2)
+            const deployerBalance = await versusToken.balanceOf(deployer)
+            console.log(`receiver balance:${receiverBalance}`)
+            console.log(`sender balance:${senderBalance}`)
+            console.log(`sender balance:${deployerBalance}`)
+        })
+    })
+
+    describe("inscreaseAllowance", function () {
+        it("increase spender allowance", async function () {
+            await versusToken.approve(test1, 100000)
+            const beforeAllowance = await versusToken.allowance(deployer, test1)
+            await versusToken.increaseAllowance(test1, 500000)
+            const currentAllowance = await versusToken.allowance(deployer, test1)
+            assert.equal(beforeAllowance.add(500000).toString(), currentAllowance.toString())
+        })
+    })
+
+    describe("decreaseAllowance", function () {
+        it("decrease spender allowance", async function () {
+            await versusToken.approve(test1, 100000)
+            const beforeAllowance = await versusToken.allowance(deployer, test1)
+            await versusToken.decreaseAllowance(test1, 500)
+            const currentAllowance = await versusToken.allowance(deployer, test1)
+            assert.equal(beforeAllowance.sub(500).toString(), currentAllowance.toString())
+        })
+
+        it("descreased value > allowance,should failed", async function () {
+            await versusToken.approve(test1, 100000)
+            await expect(versusToken.decreaseAllowance(test1, 10000000)).to.be.revertedWith(
+                "DecreaseAllowance__BelowZero"
+            )
+        })
+    })
 })

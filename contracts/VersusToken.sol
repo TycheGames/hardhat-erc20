@@ -5,6 +5,7 @@ error Not__Owner();
 error Address__Zero();
 error Transfer__Exceed();
 error Insufficent__Allowance();
+error DecreaseAllowance__BelowZero();
 
 contract VersusToken {
     mapping(address => uint256) private _balance;
@@ -141,7 +142,8 @@ contract VersusToken {
     function decreaseAllowance(address spender, uint256 subedValue) public returns (bool) {
         address owner = msg.sender;
         uint256 currentAllowance = allowance(owner, spender);
-        require(currentAllowance >= subedValue, "ERC20: decrease allowance below zero!");
+        // require(currentAllowance >= subedValue, "ERC20: decrease allowance below zero!");
+        if (currentAllowance < subedValue) revert DecreaseAllowance__BelowZero();
         unchecked {
             _approve(owner, spender, currentAllowance - subedValue);
         }
@@ -155,7 +157,8 @@ contract VersusToken {
     ) internal {
         uint256 currentAllowance = allowance(owner, spender);
         if (currentAllowance != type(uint256).max) {
-            require(currentAllowance >= amount, "ERC20:insufficent allowance");
+            // require(currentAllowance >= amount, "ERC20:insufficent allowance");
+            if (currentAllowance < amount) revert Insufficent__Allowance();
             unchecked {
                 _approve(owner, spender, currentAllowance - amount);
             }
